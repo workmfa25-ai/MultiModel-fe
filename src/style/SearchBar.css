@@ -1,0 +1,24 @@
+.search-container {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 0.5rem;
+   box-shadow:0 0 0 1px rgb(34 197 94 / 0.25);
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 0.5rem;
+  border: rgb(34 197 94 / 1);
+  font-size: 14px;
+  color: rgb(34 197 94 / 1);
+  background-color: transparent;
+}
+
+.search-input::placeholder {
+  color: rgb(34 197 94 / 1);
+}
+
+.search-input:hover {
+  box-shadow: 0 0 0 1px rgb(34 197 94 / 1);
+}

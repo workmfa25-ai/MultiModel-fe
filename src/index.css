@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: #0b0f0e;
+  color: #e5e7eb;
+  font-family: system-ui, sans-serif;
+}
+
+.pipeline-flow {
+  animation: flowMove 6s linear infinite;
+}
+
+.pipeline-delay-0 {
+  animation-delay: 0s;
+}
+.pipeline-delay-1 {
+  animation-delay: 1.5s;
+}
+.pipeline-delay-2 {
+  animation-delay: 3s;
+}
+
+@keyframes flowMove {
+  from {
+    stroke-dashoffset: 240;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}

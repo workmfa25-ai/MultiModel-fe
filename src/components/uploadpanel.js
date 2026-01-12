@@ -1,0 +1,129 @@
+// export default function UploadPanel() {
+//   return (
+//     <div className="col-span-1 p-4 rounded-lg bg-panel border border-border">
+//       <h3 className="text-accent mb-3">Upload Asset</h3>
+
+//       <div className="border border-dashed border-[#2a3a33] rounded p-6 text-center text-gray-400 hover:border-accent transition cursor-pointer">
+//         Drag & Drop Files
+//         <br />
+//         <span className="text-xs">
+//           Documents • Images • Audio • Video
+//         </span>
+//       </div>
+//     </div>
+//   );
+// }
+
+import { useRef, useState } from "react";
+import { FileUp, Upload } from "lucide-react";
+import toast from "react-hot-toast";
+
+export default function UploadPanel({ onSuccess }) {
+  const inputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileSelect = (file) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("audio/")) {
+      toast.error("Only audio files allowed");
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+ const uploadFile = async () => {
+  if (!selectedFile) {
+    toast.error("Please select a file first");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("audio_file", selectedFile);
+
+  setUploading(true);
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/diagnose_yamnet", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Upload failed");
+    }
+
+    const data = await res.json();   // 👈 ADD THIS
+
+    toast.success("File uploaded successfully");
+    onSuccess?.(data);               // 👈 ADD THIS
+
+    setSelectedFile(null);
+    inputRef.current.value = null;
+
+  } catch (err) {
+    toast.error(err.message || "Upload failed");
+  } finally {
+    setUploading(false);
+  }
+};
+
+
+  return (
+    <div className="col-span-1 p-4 rounded-lg bg-panel border border-border">
+      <h3 className="text-accent mb-3">Upload Asset</h3>
+
+      {/* Drop / Select Area */}
+      <div
+        onClick={() => inputRef.current.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          handleFileSelect(e.dataTransfer.files[0]);
+        }}
+        className="flex flex-col items-center justify-center gap-3
+          border border-dashed border-[#2a3a33] rounded p-6
+          cursor-pointer hover:border-accent transition"
+      >
+        <FileUp size={36} className="text-accent" />
+
+        <span className="text-sm text-gray-300">
+          {selectedFile ? selectedFile.name : "Click or drop file to select"}
+        </span>
+
+        <span className="text-xs text-gray-500">
+          Documents • Images • Audio • Video
+        </span>
+      </div>
+
+      {/* Upload Button */}
+      <button
+        onClick={uploadFile}
+        disabled={!selectedFile || uploading}
+        className={`mt-4 w-full flex items-center justify-center gap-2
+          px-4 py-2 rounded-md text-sm font-medium transition
+          ${
+            uploading || !selectedFile
+              ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+              : "bg-accent text-black hover:opacity-90"
+          }
+        `}
+      >
+        <Upload size={16} />
+        {uploading ? "Uploading..." : "Upload"}
+      </button>
+
+      {/* Hidden input */}
+      <input
+        ref={inputRef}
+        type="file"
+        className="hidden"
+        accept="audio/*"
+        onChange={(e) => handleFileSelect(e.target.files[0])}
+      />
+    </div>
+  );
+}
