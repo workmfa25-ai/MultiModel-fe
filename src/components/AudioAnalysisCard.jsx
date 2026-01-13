@@ -1,60 +1,5 @@
-// import { Volume2, Clock, Cpu } from "lucide-react";
-
-// export default function AudioAnalysisCard({ data }) {
-//   const topSounds = data.summary.slice(0, 5);
-
-//   return (
-//     <div className="bg-panel border border-border rounded-lg p-5">
-//       <h3 className="text-accent mb-4">Processed Audio Overview</h3>
-
-//       {/* File Info */}
-//       <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
-//         <div className="flex items-center gap-2 text-gray-300">
-//           <Volume2 size={16} />
-//           {data.file}
-//         </div>
-
-//         <div className="flex items-center gap-2 text-gray-300">
-//           <Clock size={16} />
-//           {data.duration}s
-//         </div>
-
-//         <div className="flex items-center gap-2 text-gray-300">
-//           <Cpu size={16} />
-//           {data.sample_rate} Hz
-//         </div>
-//       </div>
-
-//       {/* Detected Sounds */}
-//       <div className="space-y-3">
-//         {topSounds.map((sound) => (
-//           <div key={sound.label}>
-//             <div className="flex justify-between text-xs text-gray-300 mb-1">
-//               <span>{sound.label}</span>
-//               <span>{Math.round(sound.avg_confidence * 100)}%</span>
-//             </div>
-
-//             <div className="w-full h-2 bg-[#1f2a25] rounded">
-//               <div
-//                 className="h-2 bg-accent rounded"
-//                 style={{
-//                   width: `${Math.min(sound.avg_confidence * 100, 100)}%`,
-//                 }}
-//               />
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       {/* Footer */}
-//       <div className="mt-4 text-xs text-gray-500">
-//         Engine: {data.engine} • Windows: {data.windows}
-//       </div>
-//     </div>
-//   );
-// }
-
 import { Volume2, Clock, Cpu } from "lucide-react";
+import AudioResults from "../pages/SearchResults/AudioResults";
 
 export default function AudioAnalysisCard({ data }) {
   const transcript =
@@ -62,7 +7,7 @@ export default function AudioAnalysisCard({ data }) {
 
   /* ---------- UNIQUE EVENTS ---------- */
   const uniqueMap = {};
-  data.window_detections.forEach((w) => {
+  data?.yamnet?.window_detections.forEach((w) => {
     w.predictions.forEach((p) => {
       if (!uniqueMap[p.label]) {
         uniqueMap[p.label] = {
@@ -77,9 +22,9 @@ export default function AudioAnalysisCard({ data }) {
     });
   });
 
-  const uniqueEvents = Object.values(uniqueMap).sort(
-    (a, b) => b.max - a.max
-  );
+  console.log(data, "api res");
+
+  const uniqueEvents = Object.values(uniqueMap).sort((a, b) => b.max - a.max);
 
   return (
     <div className="group bg-panel border border-border rounded-lg p-5 h-[520px]">
@@ -87,13 +32,13 @@ export default function AudioAnalysisCard({ data }) {
 
       <div className="grid grid-cols-2 gap-6 h-[460px]">
         {/* ================= LEFT ================= */}
-        <div className="border border-border rounded-lg p-4 bg-[#0f1714]
-                        overflow-y-hidden group-hover:overflow-y-auto pr-2">
+        <div
+          className="border border-border rounded-lg p-4 bg-[#0f1714]
+                        overflow-y-hidden group-hover:overflow-y-auto pr-2"
+        >
           <h4 className="text-sm text-accent mb-2">Transcript</h4>
-
-          <p className="text-sm text-gray-300 leading-relaxed">
-            {transcript}
-          </p>
+          <AudioResults />
+          <p className="text-sm text-gray-300 leading-relaxed">{transcript}</p>
 
           <div className="mt-3 text-xs text-gray-500">
             (Auto-generated · Placeholder)
@@ -131,12 +76,12 @@ export default function AudioAnalysisCard({ data }) {
             />
             <InfoWithTooltip
               icon={<Clock size={16} />}
-              label={`${data.duration}s`}
+              label={`${data?.audio?.duration}s`}
               tooltip="Total audio duration"
             />
             <InfoWithTooltip
               icon={<Cpu size={16} />}
-              label={`${data.sample_rate} Hz`}
+              label={`${data?.audio?.sample_rate} Hz`}
               tooltip="Audio sample rate"
             />
           </div>
@@ -145,18 +90,18 @@ export default function AudioAnalysisCard({ data }) {
           <div className="space-y-3">
             <h4 className="text-sm text-accent">Summary (Aggregated)</h4>
 
-            {data.summary.map((s) => (
+            {data?.yamnet?.summary.map((s) => (
               <div key={s.label}>
                 <div className="flex justify-between text-xs text-gray-300 mb-1">
                   <span>{s.label}</span>
-                  <span>{Math.round(s.avg_confidence * 100)}%</span>
+                  <span>{Math.round(s.confidence * 100)}%</span>
                 </div>
 
                 <div className="w-full h-2 bg-[#1f2a25] rounded">
                   <div
                     className="h-2 bg-accent rounded"
                     style={{
-                      width: `${Math.min(s.avg_confidence * 100, 100)}%`,
+                      width: `${Math.min(s.confidence * 100, 100)}%`,
                     }}
                   />
                 </div>

@@ -1,22 +1,7 @@
-// export default function UploadPanel() {
-//   return (
-//     <div className="col-span-1 p-4 rounded-lg bg-panel border border-border">
-//       <h3 className="text-accent mb-3">Upload Asset</h3>
-
-//       <div className="border border-dashed border-[#2a3a33] rounded p-6 text-center text-gray-400 hover:border-accent transition cursor-pointer">
-//         Drag & Drop Files
-//         <br />
-//         <span className="text-xs">
-//           Documents • Images • Audio • Video
-//         </span>
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useRef, useState } from "react";
 import { FileUp, Upload } from "lucide-react";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 export default function UploadPanel({ onSuccess }) {
   const inputRef = useRef(null);
@@ -34,42 +19,40 @@ export default function UploadPanel({ onSuccess }) {
     setSelectedFile(file);
   };
 
- const uploadFile = async () => {
-  if (!selectedFile) {
-    toast.error("Please select a file first");
-    return;
-  }
+  const uploadFile = async () => {
 
-  const formData = new FormData();
-  formData.append("audio_file", selectedFile);
-
-  setUploading(true);
-
-  try {
-    const res = await fetch("http://127.0.0.1:8000/diagnose_yamnet", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Upload failed");
+    if (!selectedFile) {
+      toast.error("Please select a file first");
+      return;
     }
 
-    const data = await res.json();   // 👈 ADD THIS
+    const formData = new FormData();
+    formData.append("audio_file", selectedFile);
 
-    toast.success("File uploaded successfully");
-    onSuccess?.(data);               // 👈 ADD THIS
+    setUploading(true);
 
-    setSelectedFile(null);
-    inputRef.current.value = null;
+    try {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/transcribe",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      toast.success("File uploaded successfully");
+      onSuccess?.(res.data);
 
-  } catch (err) {
-    toast.error(err.message || "Upload failed");
-  } finally {
-    setUploading(false);
-  }
-};
+      setSelectedFile(null);
+      inputRef.current.value = null;
+    } catch (err) {
+      toast.error(err.response?.data?.detail || err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
 
 
   return (
