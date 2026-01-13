@@ -1,18 +1,17 @@
 import React from "react";
-import res from "../res.json";
+// import res from "../res.json";
 import "../../src/index.css";
-
 
 const panelStyle = {
   boxShadow: "0 0 0 1px rgb(34 197 94 / 1)",
 };
-const DocAnalysisCard = () => {
-  const { geo_tags, statistics, entity_summary } = res;
+const DocAnalysisCard = ({ docAnalysis }) => {
+  const { geo_tags, statistics, entity_summary } = docAnalysis;
 
   return (
-    <div className="grid grid-cols-2 gap-6 p-6 bg-[#0b0f0e] text-gray-200 h-[50vh] overflow-y-scroll no-scrollbar">
+    <div className="grid grid-cols-2 gap-6 p-6 bg-[#0f1714] text-gray-200 h-[50vh] overflow-y-scroll no-scrollbar">
       {/* LEFT PANEL */}
-      <div className="p-4 rounded-lg bg-black/40" style={panelStyle}>
+      <div className="p-4 rounded-lg bg-[#0f1714]" style={panelStyle}>
         <h3 className="text-green-500 mb-4">Geo & Statistics</h3>
 
         <section className="mb-6">
@@ -21,7 +20,7 @@ const DocAnalysisCard = () => {
             {geo_tags?.locations?.slice(0, 3).map((loc, i) => (
               <div
                 key={i}
-                className="p-2 rounded bg-black/30"
+                className="p-2 rounded bg-[#0f1714]"
                 style={panelStyle}
               >
                 <div className="font-medium">{loc.location}</div>
@@ -48,7 +47,7 @@ const DocAnalysisCard = () => {
                 {statistics?.entity_types?.slice(0, 3).map((t) => (
                   <span
                     key={t}
-                    className="px-2 py-0.5 rounded text-xs bg-black/30"
+                    className="px-2 py-0.5 rounded text-xs bg-[#0f1714]"
                     style={panelStyle}
                   >
                     {t}
@@ -61,14 +60,14 @@ const DocAnalysisCard = () => {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="p-4 rounded-lg bg-black/40" style={panelStyle}>
+      <div className="p-4 rounded-lg bg-[#0f1714]" style={panelStyle}>
         <h3 className="text-green-500 mb-4">Entity Summary (Top 3 Each)</h3>
 
         <div className="space-y-4 text-sm">
           {Object.entries(entity_summary || {}).map(([key, value]) => (
             <div
               key={key}
-              className="p-3 rounded bg-black/30"
+              className="p-3 rounded bg-[#0f1714]"
               style={panelStyle}
             >
               <div className="font-semibold text-green-400 mb-2">{key}</div>

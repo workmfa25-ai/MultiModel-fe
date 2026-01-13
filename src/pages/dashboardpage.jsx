@@ -14,10 +14,9 @@ import DocAnalysisCard from "../components/DocAnalysisCard";
 
 export default function DashboardPage() {
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [docAnalysis, setDocAnalysis] = useState(null);
   const [query, setQuery] = useState("");
   const normalizedQuery = query.toLowerCase();
-
-  console.log(analysisResult, "analysisResult");
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -34,16 +33,25 @@ export default function DashboardPage() {
           <AnalyticsGrid />
 
           {/* Right side upload */}
-          <UploadPanel onSuccess={setAnalysisResult} />
+          <UploadPanel
+            onSuccess={setAnalysisResult}
+            setDocAnalysis={setDocAnalysis}
+          />
 
           {/* New analysis card (fills empty space) */}
-          {analysisResult !== null && (
+          {analysisResult && (
             <div className="col-span-3  ">
               <AudioAnalysisCard data={analysisResult} />
             </div>
           )}
+          {docAnalysis && (
+            <div className="col-span-3  ">
+              <DocAnalysisCard docAnalysis={docAnalysis} />
+            </div>
+          )}
         </main>
-        <DocAnalysisCard />
+        {/* <DocAnalysisCard /> */}
+
         <div className="px-6 overflow-y-scroll no-scrollbar ">
           {normalizedQuery.includes("ca" || "can" || "cannon") && (
             <AudioResults />

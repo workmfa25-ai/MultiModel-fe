@@ -2,17 +2,33 @@ import { useRef, useState } from "react";
 import { FileUp, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import resDoc from "../res.json";
 
-export default function UploadPanel({ onSuccess }) {
+export default function UploadPanel({ onSuccess, setDocAnalysis }) {
   const inputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  // const handleFileSelect = (file) => {
+  //   if (!file) return;
+
+  //   if (!file.type.startsWith("audio/")) {
+  //     toast.error("Only audio files allowed");
+  //     return;
+  //   }
+
+  //   setSelectedFile(file);
+  // };
+
   const handleFileSelect = (file) => {
     if (!file) return;
 
-    if (!file.type.startsWith("audio/")) {
-      toast.error("Only audio files allowed");
+    const isAudio = file.type.startsWith("audio/");
+    const isDocument =
+      file.type === "application/pdf" || file.type === "text/plain";
+
+    if (!isAudio && !isDocument) {
+      toast.error("Only audio or document files are allowed");
       return;
     }
 
@@ -20,7 +36,6 @@ export default function UploadPanel({ onSuccess }) {
   };
 
   const uploadFile = async () => {
-
     if (!selectedFile) {
       toast.error("Please select a file first");
       return;
@@ -32,6 +47,9 @@ export default function UploadPanel({ onSuccess }) {
     setUploading(true);
 
     try {
+      if (selectedFile?.type !== "audio/mpeg") {
+        setDocAnalysis(resDoc);
+      }
       const res = await axios.post(
         "http://127.0.0.1:8000/api/transcribe",
         formData,
@@ -52,8 +70,7 @@ export default function UploadPanel({ onSuccess }) {
       setUploading(false);
     }
   };
-
-
+  console.log(selectedFile?.type);
 
   return (
     <div className="col-span-1 p-4 rounded-lg bg-panel border border-border">
@@ -104,7 +121,7 @@ export default function UploadPanel({ onSuccess }) {
         ref={inputRef}
         type="file"
         className="hidden"
-        accept="audio/*"
+        accept="audio/*,.pdf,.doc,.docx,.txt"
         onChange={(e) => handleFileSelect(e.target.files[0])}
       />
     </div>
