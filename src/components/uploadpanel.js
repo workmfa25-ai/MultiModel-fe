@@ -2,33 +2,29 @@ import { useRef, useState } from "react";
 import { FileUp, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import resDoc from "../res.json";
 
-export default function UploadPanel({ onSuccess, setDocAnalysis }) {
+export default function UploadPanel({
+  onSuccess,
+  setDocAnalysis,
+  setImageAnalysis,
+}) {
   const inputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-
-  // const handleFileSelect = (file) => {
-  //   if (!file) return;
-
-  //   if (!file.type.startsWith("audio/")) {
-  //     toast.error("Only audio files allowed");
-  //     return;
-  //   }
-
-  //   setSelectedFile(file);
-  // };
 
   const handleFileSelect = (file) => {
     if (!file) return;
 
     const isAudio = file.type.startsWith("audio/");
+    const isImage = file.type.startsWith("image/");
     const isDocument =
-      file.type === "application/pdf" || file.type === "text/plain";
+      file.type === "application/pdf" ||
+      file.type === "text/plain" ||
+      file.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-    if (!isAudio && !isDocument) {
-      toast.error("Only audio or document files are allowed");
+    if (!isAudio && !isImage && !isDocument) {
+      toast.error("Only audio, image, or document files are allowed");
       return;
     }
 
@@ -41,36 +37,117 @@ export default function UploadPanel({ onSuccess, setDocAnalysis }) {
       return;
     }
 
+    const isAudio = selectedFile.type.startsWith("audio/");
+    const isImage = selectedFile.type.startsWith("image/");
+    const isDoc = !isAudio && !isImage;
+
+    let endpoint = "";
+
+    if (isAudio) {
+      endpoint = "http://127.0.0.1:8000/api/transcribe";
+    } else if (isImage) {
+      endpoint = "http://127.0.0.1:8000/extract";
+    } else {
+      endpoint = "http://127.0.0.1:8000/documents/upload";
+    }
+
     const formData = new FormData();
-    formData.append("audio_file", selectedFile);
+
+    // Match backend parameter names
+    if (isAudio) {
+      formData.append("audio_file", selectedFile);
+    } else {
+      // both /extract and /documents/upload expect "file"
+      formData.append("file", selectedFile);
+    }
 
     setUploading(true);
 
     try {
-      if (selectedFile?.type !== "audio/mpeg") {
-        setDocAnalysis(resDoc);
-      }
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/transcribe",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const res = await axios.post(endpoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       toast.success("File uploaded successfully");
-      onSuccess?.(res.data);
+
+      if (isAudio) {
+        onSuccess?.(res.data);
+      } else if (isImage) {
+        setImageAnalysis?.(res.data); // or whatever state you use for image results
+      } else {
+        setDocAnalysis?.(res.data);
+      }
 
       setSelectedFile(null);
-      inputRef.current.value = null;
+      if (inputRef.current) inputRef.current.value = null;
+
+      console.log(res.data, "res.data");
     } catch (err) {
-      toast.error(err.response?.data?.detail || err.message || "Upload failed");
+      toast.error(
+        err?.response?.data?.detail ||
+          err?.response?.data?.message ||
+          err.message ||
+          "Upload failed"
+      );
     } finally {
       setUploading(false);
     }
   };
-  console.log(selectedFile?.type);
+
+  // const uploadFile = async () => {
+  //   if (!selectedFile) {
+  //     toast.error("Please select a file first");
+  //     return;
+  //   }
+
+  //   const isAudio = selectedFile.type.startsWith("audio/");
+  //   const endpoint = isAudio
+  //     ? "http://127.0.0.1:8000/api/transcribe"
+  //     : "http://127.0.0.1:8000/documents/upload";
+
+  //   const formData = new FormData();
+
+  //   // IMPORTANT: match backend parameter names
+  //   if (isAudio) {
+  //     formData.append("audio_file", selectedFile);
+  //   } else {
+  //     formData.append("file", selectedFile);
+  //   }
+
+  //   setUploading(true);
+
+  //   try {
+  //     const res = await axios.post(endpoint, formData, {
+  //       headers: {
+  //         "Content-Type": "multipart/form-data",
+  //       },
+  //     });
+
+  //     toast.success("File uploaded successfully");
+
+  //     if (isAudio) {
+  //       onSuccess?.(res.data);
+  //     } else {
+  //       setDocAnalysis?.(res.data);
+  //     }
+
+  //     setSelectedFile(null);
+  //     if (inputRef.current) inputRef.current.value = null;
+  //     console.log(res.data,'res.data');
+
+  //   } catch (err) {
+  //     toast.error(
+  //       err?.response?.data?.detail ||
+  //         err?.response?.data?.message ||
+  //         err.message ||
+  //         "Upload failed"
+  //     );
+  //   } finally {
+  //     setUploading(false);
+  //   }
+  // };
 
   return (
     <div className="col-span-1 p-4 rounded-lg bg-panel border border-border">
@@ -121,7 +198,7 @@ export default function UploadPanel({ onSuccess, setDocAnalysis }) {
         ref={inputRef}
         type="file"
         className="hidden"
-        accept="audio/*,.pdf,.doc,.docx,.txt"
+        accept="audio/*,.pdf,.doc,.docx,.txt, .jpg, .jpeg"
         onChange={(e) => handleFileSelect(e.target.files[0])}
       />
     </div>

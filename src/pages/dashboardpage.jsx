@@ -11,13 +11,16 @@ import DocumentResults from "./SearchResults/DocumentResults";
 import VideoResults from "./SearchResults/VideoResults";
 import "../../src/index.css";
 import DocAnalysisCard from "../components/DocAnalysisCard";
+import ImageAnalysisPanel from "../components/ImageAnalysisPanel";
 
 export default function DashboardPage() {
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [imageAnalysis, setImageAnalysis] = useState(null);
   const [docAnalysis, setDocAnalysis] = useState(null);
   const [query, setQuery] = useState("");
   const normalizedQuery = query.toLowerCase();
 
+  
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
@@ -36,6 +39,7 @@ export default function DashboardPage() {
           <UploadPanel
             onSuccess={setAnalysisResult}
             setDocAnalysis={setDocAnalysis}
+            setImageAnalysis={setImageAnalysis}
           />
 
           {/* New analysis card (fills empty space) */}
@@ -49,8 +53,13 @@ export default function DashboardPage() {
               <DocAnalysisCard docAnalysis={docAnalysis} />
             </div>
           )}
+          {imageAnalysis && (
+            <div className="col-span-3  ">
+              <ImageAnalysisPanel imageAnalysis={imageAnalysis} />
+            </div>
+          )}
         </main>
-        {/* <DocAnalysisCard /> */}
+        {/* <ImageAnalysisPanel /> */}
 
         <div className="px-6 overflow-y-scroll no-scrollbar ">
           {normalizedQuery.includes("ca" || "can" || "cannon") && (

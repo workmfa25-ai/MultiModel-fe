@@ -2,9 +2,6 @@ import { Volume2, Clock, Cpu } from "lucide-react";
 import AudioResults from "../pages/SearchResults/AudioResults";
 
 export default function AudioAnalysisCard({ data }) {
-  const transcript =
-    "A loud mechanical rattling sound is heard, followed by intermittent bursts resembling industrial tools or machinery. No clear speech is detected.";
-
   /* ---------- UNIQUE EVENTS ---------- */
   const uniqueMap = {};
   data?.yamnet?.window_detections.forEach((w) => {
@@ -22,7 +19,7 @@ export default function AudioAnalysisCard({ data }) {
     });
   });
 
-  console.log(data, "api res");
+  console.log(data?.transcription?.text, "api res");
 
   const uniqueEvents = Object.values(uniqueMap).sort((a, b) => b.max - a.max);
 
@@ -30,15 +27,17 @@ export default function AudioAnalysisCard({ data }) {
     <div className="group bg-panel border border-border rounded-lg p-5 h-[520px]">
       <h3 className="text-accent mb-4">Processed Audio Overview</h3>
 
-      <div className="grid grid-cols-2 gap-6 h-[460px]">
+      <div className="grid grid-cols-2 gap-6 h-[460px] ">
         {/* ================= LEFT ================= */}
         <div
           className="border border-border rounded-lg p-4 bg-[#0f1714]
-                        overflow-y-hidden group-hover:overflow-y-auto pr-2"
+                        overflow-y-hidden group-hover:overflow-y-auto pr-2 mb-6"
         >
           <h4 className="text-sm text-accent mb-2">Transcript</h4>
-          <AudioResults />
-          <p className="text-sm text-gray-300 leading-relaxed">{transcript}</p>
+          <AudioResults data={data} />
+          <p className="text-sm text-gray-300 leading-relaxed">
+            {data?.transcription?.text}
+          </p>
 
           <div className="mt-3 text-xs text-gray-500">
             (Auto-generated · Placeholder)
