@@ -7,6 +7,7 @@ export default function UploadPanel({
   onSuccess,
   setDocAnalysis,
   setImageAnalysis,
+  setVideoAnalysis,
 }) {
   const inputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -16,6 +17,7 @@ export default function UploadPanel({
     if (!file) return;
 
     const isAudio = file.type.startsWith("audio/");
+    const isVideo = file.type.startsWith("video/");
     const isImage = file.type.startsWith("image/");
     const isDocument =
       file.type === "application/pdf" ||
@@ -23,8 +25,8 @@ export default function UploadPanel({
       file.type ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-    if (!isAudio && !isImage && !isDocument) {
-      toast.error("Only audio, image, or document files are allowed");
+    if (!isAudio && !isVideo && !isImage && !isDocument) {
+      toast.error("Only audio, video, image, or document files are allowed");
       return;
     }
 
@@ -38,13 +40,16 @@ export default function UploadPanel({
     }
 
     const isAudio = selectedFile.type.startsWith("audio/");
+    const isVideo = selectedFile.type.startsWith("video/");
     const isImage = selectedFile.type.startsWith("image/");
-    const isDoc = !isAudio && !isImage;
+    const isDocument = !isAudio && !isVideo && !isImage;
 
     let endpoint = "";
 
     if (isAudio) {
       endpoint = "http://127.0.0.1:8000/api/transcribe";
+    } else if (isVideo) {
+      endpoint = "http://127.0.0.1:8000/analyze";
     } else if (isImage) {
       endpoint = "http://127.0.0.1:8000/extract";
     } else {
@@ -57,7 +62,7 @@ export default function UploadPanel({
     if (isAudio) {
       formData.append("audio_file", selectedFile);
     } else {
-      // both /extract and /documents/upload expect "file"
+      // video, image, and document endpoints expect "file"
       formData.append("file", selectedFile);
     }
 
@@ -74,16 +79,16 @@ export default function UploadPanel({
 
       if (isAudio) {
         onSuccess?.(res.data);
+      } else if (isVideo) {
+        setVideoAnalysis?.(res.data);
       } else if (isImage) {
-        setImageAnalysis?.(res.data); // or whatever state you use for image results
+        setImageAnalysis?.(res.data);
       } else {
         setDocAnalysis?.(res.data);
       }
 
       setSelectedFile(null);
       if (inputRef.current) inputRef.current.value = null;
-
-      console.log(res.data, "res.data");
     } catch (err) {
       toast.error(
         err?.response?.data?.detail ||
@@ -198,7 +203,7 @@ export default function UploadPanel({
         ref={inputRef}
         type="file"
         className="hidden"
-        accept="audio/*,.pdf,.doc,.docx,.txt, .jpg, .jpeg"
+        accept="audio/*,.pdf,.doc,.docx,.txt, .jpg, .jpeg, video/*"
         onChange={(e) => handleFileSelect(e.target.files[0])}
       />
     </div>
